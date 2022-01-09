@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class SearchServiceImpl implements SearchService{
 
-    private final double SIMILAR_POINT = 0.01;
+    private final double SIMILAR_POINT = 0.4;
 
     private final int RESPONSE_COUNT = 10;
 
@@ -46,23 +48,6 @@ public class SearchServiceImpl implements SearchService{
 
             returnList = makeReturnList(keyword, kList, nList);
 
-            //kList.addAll(nList);
-/*
-            returnList.addAll(kList);
-            returnList.addAll(nList);
-
-            for(int i=0; i<kList.size(); i++){
-                System.out.println(kList.get(i).getTitle()+"   "+nList.get(i).getTitle());
-                System.out.println(similarity(kList.get(i).getTitle(), nList.get(i).getTitle()));
-            }
-
-
-            for(int i=0; i<kList.size(); i++){
-                SearchVo vo = kList.get(i);
-                System.out.println(vo.getSeq()+" "+vo.getFromData()+" "+vo.getTitle()+" "+vo.getAddress());
-
-            }*/
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,21 +68,33 @@ public class SearchServiceImpl implements SearchService{
     @Override
     public ArrayList<SearchVo> keywordSearchList() {
         ArrayList<SearchVo> result = commonRepository.keywordSearchList();
-        System.out.println("result : ");
 
-        for(SearchVo vo : result){
+        Collections.sort(result, new Comparator<SearchVo>() {
+            @Override
+            public int compare(SearchVo o1, SearchVo o2) {
+                return o2.getSearchCount()-o1.getSearchCount();
+            }
+        });
 
-            System.out.println(vo.getSearchKeyword()+" "+vo.getSearchCount());
+        if(result.size() <= RESPONSE_COUNT){
+            return result;
 
+        }else{
+
+            int size = result.size();
+            for(int i=RESPONSE_COUNT; i<size; i++){
+                result.remove(i);
+            }
         }
-
-
         return result;
     }
 
     @Override
     public ArrayList<SearchVo> makeReturnList(String keyword, ArrayList<SearchVo> list1, ArrayList<SearchVo> list2) {
         System.out.println("makeReturnList Start~!");
+
+        System.out.println("list1.size() : "+list1.size() + "     list2.size() : "+list2.size());
+
         ArrayList<SearchVo> returnVoList = new ArrayList<SearchVo>();
 
         for(int i=0; i< list1.size(); i++){
@@ -108,6 +105,7 @@ public class SearchServiceImpl implements SearchService{
                 System.out.println("kTitle : "+kTitle+"  nTitle : "+nTitle+"  유사도 :"+similarity(kTitle, nTitle));
 
                 if(similarity(kTitle, nTitle) >= SIMILAR_POINT){
+                    list1.get(i).setFromData("KN");
                     returnVoList.add(list1.get(i));
                     list1.remove(i);
                     list2.remove(j);
@@ -115,27 +113,38 @@ public class SearchServiceImpl implements SearchService{
             }
         }
 
+        if(returnVoList.size() >= RESPONSE_COUNT
+                || list1.size() + list2.size() <= RESPONSE_COUNT-returnVoList.size()){
+            for(int i=0; i<list1.size(); i++){
+                returnVoList.add(list1.get(i));
+            }
+            for(int j=0; j<list2.size(); j++){
+                returnVoList.add(list2.get(j));
+            }
+            return returnVoList;
+        }
+
         System.out.println("returnVoList.size() : "+returnVoList.size());
-        int remainKCount =  (RESPONSE_COUNT-returnVoList.size())/2;
-        int remainNCount =  RESPONSE_COUNT-returnVoList.size()-remainKCount;
-
-        System.out.println("remainKCount : "+remainKCount);
-        System.out.println("remainNCount : "+remainNCount);
-
-        System.out.println("list1.size():  "+list1.size());
-        System.out.println("list2.size():  "+list2.size());
-
-
-        remainKCount = remainKCount < list1.size() ? remainKCount : list1.size();
-        remainNCount = remainNCount < list2.size() ? remainNCount : list2.size();
+        int remainKCount =  (RESPONSE_COUNT-returnVoList.size()) < list1.size() ? (RESPONSE_COUNT-returnVoList.size()) : list1.size();
 
         for(int i=0; i<remainKCount; i++){
             returnVoList.add(list1.get(i));
         }
 
-        for(int j=0; j<remainNCount; j++){
-            returnVoList.add(list2.get(j));
+        if(returnVoList.size()==RESPONSE_COUNT){
+            for(int j=0; j<list2.size(); j++){
+                System.out.println("값교체 list2.size : "+list2.size());
+                returnVoList.set(RESPONSE_COUNT-(j+1), list2.get(j));
+            }
+        }else{
+            for(int j=0; j<list2.size(); j++){
+                returnVoList.add(list2.get(j));
+                if(returnVoList.size() >= RESPONSE_COUNT) break;
+            }
         }
+
+
+        System.out.println("*********returnVoList.size() : "+returnVoList.size());
         return returnVoList;
     }
 

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Controller
@@ -28,16 +29,20 @@ public class SearchController {
 
     @GetMapping("keyword")
     @ResponseBody
-    public ArrayList<SearchVo> searchKeyword(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
+    public  HashMap<String, ArrayList<SearchVo>> searchKeyword(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
 
-        //JSONArray json = new JSONArray(searchService.keywordSearch(keyword));
-        return searchService.keywordSearch(keyword);
+        HashMap<String, ArrayList<SearchVo>> returnMap = new HashMap<String, ArrayList<SearchVo>>();
+        returnMap.put("places", searchService.keywordSearch(keyword));
+
+        return returnMap;
     }
 
     @GetMapping("/searchKeywordList")
-    public List<SearchVo> searchKeywordList(Model model){
-        List<SearchVo> returnVoList = searchService.keywordSearchList();
-        return returnVoList;
+    @ResponseBody
+    public HashMap<String, ArrayList<SearchVo>>  searchKeywordList(Model model){
+        HashMap<String, ArrayList<SearchVo>> returnMap = new HashMap<String, ArrayList<SearchVo>>();
+        returnMap.put("placesCount", searchService.keywordSearchList());
+        return returnMap;
     }
 
     @GetMapping("test")

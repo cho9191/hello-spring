@@ -37,7 +37,6 @@ public class CommonRepositoryImpl implements CommonRepository{
 
     @Override
     public ArrayList<SearchVo> keywordSearchList() {
-
         return new ArrayList<SearchVo>(store.values());
     }
 }

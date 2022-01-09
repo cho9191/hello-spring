@@ -5,6 +5,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -21,13 +22,20 @@ public class KSearchRepositoryImpl implements SearchRepository{
 
     ArrayList<SearchVo> arrayList;
 
+    @Value("${k.url}")
+    private String k_url;
+
+    @Value("${k.api.key}")
+    private String k_api_key;
+
     @Override
     public ArrayList<SearchVo>  apiCall(String keyword) throws IOException {
         System.out.println("KSearchRepositoryImpl.apiCall.Start!! ");
         String encodeKeyword = URLEncoder.encode(keyword,"UTF-8");
         System.out.println("keyword 검색 : "+encodeKeyword);
 
-        String url = "https://dapi.kakao.com/v2/local/search/keyword.json?query="+ encodeKeyword+"&size=15";
+        //size (최소: 1, 최대: 45, 기본값: 15)
+        String url = k_url+ encodeKeyword+"&size=15";
 
         String jsonString = new String();
 
@@ -36,8 +44,7 @@ public class KSearchRepositoryImpl implements SearchRepository{
         URL Url = new URL(url);
 
         HttpsURLConnection conn = (HttpsURLConnection) Url.openConnection();
-        System.out.println("conn : "+conn);
-        String auth ="KakaoAK " +"0fe1a937c8a494f8161d0a4e083ae43b";
+        String auth ="KakaoAK " +k_api_key;
         conn.setRequestMethod("GET");
         conn.setRequestProperty("X-Requested-With", "curl");
         conn.setRequestProperty("Authorization", auth);
@@ -47,8 +54,6 @@ public class KSearchRepositoryImpl implements SearchRepository{
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 
-        System.out.println("여기 테스트!");
-        //System.out.println(br.readLine());
         while((buf = br.readLine()) != null) {
             jsonString += buf;
         }
