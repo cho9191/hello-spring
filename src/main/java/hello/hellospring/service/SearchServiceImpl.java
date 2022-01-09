@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class SearchServiceImpl implements SearchService{
+
+    private final double SIMILAR_POINT = 0.01;
+
+    private final int RESPONSE_COUNT = 10;
 
     @Autowired
     private KSearchRepositoryImpl kSearchRepository;
@@ -38,15 +43,25 @@ public class SearchServiceImpl implements SearchService{
 
             System.out.println("kList :  "+kList);
             System.out.println("nList :  "+nList);
-            kList.addAll(nList);
 
+            returnList = makeReturnList(keyword, kList, nList);
+
+            //kList.addAll(nList);
+/*
             returnList.addAll(kList);
             returnList.addAll(nList);
 
             for(int i=0; i<kList.size(); i++){
+                System.out.println(kList.get(i).getTitle()+"   "+nList.get(i).getTitle());
+                System.out.println(similarity(kList.get(i).getTitle(), nList.get(i).getTitle()));
+            }
+
+
+            for(int i=0; i<kList.size(); i++){
                 SearchVo vo = kList.get(i);
                 System.out.println(vo.getSeq()+" "+vo.getFromData()+" "+vo.getTitle()+" "+vo.getAddress());
-            }
+
+            }*/
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,6 +93,93 @@ public class SearchServiceImpl implements SearchService{
 
 
         return result;
+    }
+
+    @Override
+    public ArrayList<SearchVo> makeReturnList(String keyword, ArrayList<SearchVo> list1, ArrayList<SearchVo> list2) {
+        System.out.println("makeReturnList Start~!");
+        ArrayList<SearchVo> returnVoList = new ArrayList<SearchVo>();
+
+        for(int i=0; i< list1.size(); i++){
+            String kTitle = list1.get(i).getTitle().replaceAll(keyword, "");
+            for(int j=0; j< list2.size(); j++){
+                String nTitle = list2.get(j).getTitle().replaceAll(keyword, "");
+
+                System.out.println("kTitle : "+kTitle+"  nTitle : "+nTitle+"  유사도 :"+similarity(kTitle, nTitle));
+
+                if(similarity(kTitle, nTitle) >= SIMILAR_POINT){
+                    returnVoList.add(list1.get(i));
+                    list1.remove(i);
+                    list2.remove(j);
+                }
+            }
+        }
+
+        System.out.println("returnVoList.size() : "+returnVoList.size());
+        int remainKCount =  (RESPONSE_COUNT-returnVoList.size())/2;
+        int remainNCount =  RESPONSE_COUNT-returnVoList.size()-remainKCount;
+
+        System.out.println("remainKCount : "+remainKCount);
+        System.out.println("remainNCount : "+remainNCount);
+
+        System.out.println("list1.size():  "+list1.size());
+        System.out.println("list2.size():  "+list2.size());
+
+
+        remainKCount = remainKCount < list1.size() ? remainKCount : list1.size();
+        remainNCount = remainNCount < list2.size() ? remainNCount : list2.size();
+
+        for(int i=0; i<remainKCount; i++){
+            returnVoList.add(list1.get(i));
+        }
+
+        for(int j=0; j<remainNCount; j++){
+            returnVoList.add(list2.get(j));
+        }
+        return returnVoList;
+    }
+
+
+    private double similarity(String s1, String s2) {
+        String longer = s1, shorter = s2;
+
+        if (s1.length() < s2.length()) {
+            longer = s2;
+            shorter = s1;
+        }
+
+        int longerLength = longer.length();
+        if (longerLength == 0) return 1.0;
+        return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+    }
+    private int editDistance(String s1, String s2) {
+        s1 = s1.toLowerCase();
+        s2 = s2.toLowerCase();
+        int[] costs = new int[s2.length() + 1];
+
+        for (int i = 0; i <= s1.length(); i++) {
+            int lastValue = i;
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0) {
+                    costs[j] = j;
+                } else {
+                    if (j > 0) {
+                        int newValue = costs[j - 1];
+
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+
+            if (i > 0) costs[s2.length()] = lastValue;
+        }
+
+        return costs[s2.length()];
     }
 
     @Override

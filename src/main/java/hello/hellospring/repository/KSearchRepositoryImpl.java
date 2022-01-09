@@ -27,7 +27,7 @@ public class KSearchRepositoryImpl implements SearchRepository{
         String encodeKeyword = URLEncoder.encode(keyword,"UTF-8");
         System.out.println("keyword 검색 : "+encodeKeyword);
 
-        String url = "https://dapi.kakao.com/v2/local/search/keyword.json?query="+ encodeKeyword+"&size=5";
+        String url = "https://dapi.kakao.com/v2/local/search/keyword.json?query="+ encodeKeyword+"&size=15";
 
         String jsonString = new String();
 
