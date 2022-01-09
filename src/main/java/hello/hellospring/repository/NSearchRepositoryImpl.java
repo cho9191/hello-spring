@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-//import org.json.simple.JSONObject;
 
 @Repository
 public class NSearchRepositoryImpl implements SearchRepository{

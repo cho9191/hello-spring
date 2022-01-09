@@ -1,6 +1,5 @@
 package hello.hellospring.repository;
 
-import hello.hellospring.domain.Member;
 import hello.hellospring.vo.SearchVo;
 
 import java.io.IOException;

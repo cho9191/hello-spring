@@ -4,13 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class HelloSpringApplication {
+public class KeywordApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(HelloSpringApplication.class, args);
-		System.out.println("test!!");
+		SpringApplication.run(KeywordApplication.class, args);
 	}
-
-
-
 }

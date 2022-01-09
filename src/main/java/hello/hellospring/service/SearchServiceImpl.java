@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 @Service
 public class SearchServiceImpl implements SearchService{
@@ -39,12 +38,8 @@ public class SearchServiceImpl implements SearchService{
         ArrayList<SearchVo> returnList = new ArrayList<SearchVo>();
 
         try {
-            System.out.println("SearchServiceImpl.keywordSearch.Start!! ");
             ArrayList<SearchVo> kList = kSearchRepository.apiCall(keyword);
             ArrayList<SearchVo> nList = nSearchRepository.apiCall(keyword);
-
-            System.out.println("kList :  "+kList);
-            System.out.println("nList :  "+nList);
 
             returnList = makeReturnList(keyword, kList, nList);
 
@@ -91,9 +86,6 @@ public class SearchServiceImpl implements SearchService{
 
     @Override
     public ArrayList<SearchVo> makeReturnList(String keyword, ArrayList<SearchVo> list1, ArrayList<SearchVo> list2) {
-        System.out.println("makeReturnList Start~!");
-
-        System.out.println("list1.size() : "+list1.size() + "     list2.size() : "+list2.size());
 
         ArrayList<SearchVo> returnVoList = new ArrayList<SearchVo>();
 
@@ -101,8 +93,6 @@ public class SearchServiceImpl implements SearchService{
             String kTitle = list1.get(i).getTitle().replaceAll(keyword, "");
             for(int j=0; j< list2.size(); j++){
                 String nTitle = list2.get(j).getTitle().replaceAll(keyword, "");
-
-                System.out.println("kTitle : "+kTitle+"  nTitle : "+nTitle+"  유사도 :"+similarity(kTitle, nTitle));
 
                 if(similarity(kTitle, nTitle) >= SIMILAR_POINT){
                     list1.get(i).setFromData("KN");
@@ -124,7 +114,6 @@ public class SearchServiceImpl implements SearchService{
             return returnVoList;
         }
 
-        System.out.println("returnVoList.size() : "+returnVoList.size());
         int remainKCount =  (RESPONSE_COUNT-returnVoList.size()) < list1.size() ? (RESPONSE_COUNT-returnVoList.size()) : list1.size();
 
         for(int i=0; i<remainKCount; i++){
@@ -133,7 +122,6 @@ public class SearchServiceImpl implements SearchService{
 
         if(returnVoList.size()==RESPONSE_COUNT){
             for(int j=0; j<list2.size(); j++){
-                System.out.println("값교체 list2.size : "+list2.size());
                 returnVoList.set(RESPONSE_COUNT-(j+1), list2.get(j));
             }
         }else{
@@ -143,8 +131,6 @@ public class SearchServiceImpl implements SearchService{
             }
         }
 
-
-        System.out.println("*********returnVoList.size() : "+returnVoList.size());
         return returnVoList;
     }
 
@@ -189,10 +175,5 @@ public class SearchServiceImpl implements SearchService{
         }
 
         return costs[s2.length()];
-    }
-
-    @Override
-    public void testPrint() {
-        System.out.println("testPrint~!!!");
     }
 }
