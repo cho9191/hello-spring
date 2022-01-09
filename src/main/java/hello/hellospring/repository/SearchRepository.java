@@ -4,10 +4,11 @@ import hello.hellospring.domain.Member;
 import hello.hellospring.vo.SearchVo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public interface SearchRepository {
 
-    public String apiCall(String keyword) throws IOException;
+    public ArrayList<SearchVo> apiCall(String keyword) throws IOException;
 
     SearchVo save(SearchVo searchVo);
 }

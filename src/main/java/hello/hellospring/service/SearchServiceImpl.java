@@ -23,21 +23,36 @@ public class SearchServiceImpl implements SearchService{
     private CommonRepositoryImpl commonRepository;
 
     @Override
-    public String keywordSearch(String keyword) {
+    public ArrayList<SearchVo> keywordSearch(String keyword) {
 
         SearchVo searchVo = new SearchVo();
         searchVo.setSearchKeyword(keyword);
         this.keywordSave(searchVo);
 
+        ArrayList<SearchVo> returnList = new ArrayList<SearchVo>();
+
         try {
             System.out.println("SearchServiceImpl.keywordSearch.Start!! ");
-            //kSearchRepository.apiCall(keyword);
-            nSearchRepository.apiCall(keyword);
+            ArrayList<SearchVo> kList = kSearchRepository.apiCall(keyword);
+            ArrayList<SearchVo> nList = nSearchRepository.apiCall(keyword);
+
+            System.out.println("kList :  "+kList);
+            System.out.println("nList :  "+nList);
+            kList.addAll(nList);
+
+            returnList.addAll(kList);
+            returnList.addAll(nList);
+
+            for(int i=0; i<kList.size(); i++){
+                SearchVo vo = kList.get(i);
+                System.out.println(vo.getSeq()+" "+vo.getFromData()+" "+vo.getTitle()+" "+vo.getAddress());
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return returnList;
     }
 
     @Override

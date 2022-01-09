@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface SearchService {
 
-    public String keywordSearch(String keyword);
+    public ArrayList<SearchVo> keywordSearch(String keyword);
 
     public void keywordSave(SearchVo searchVo);
 

@@ -13,20 +13,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 //import org.json.simple.JSONObject;
 
 @Repository
 public class NSearchRepositoryImpl implements SearchRepository{
 
+    ArrayList<SearchVo> arrayList;
+
     @Override
-    public String apiCall(String keyword) throws IOException {
+    public ArrayList<SearchVo>  apiCall(String keyword) throws IOException {
 
         System.out.println("NSearchRepositoryImpl.apiCall.Start!! ");
-        keyword = URLEncoder.encode(keyword,"UTF-8");
+        String encodeKeyword = URLEncoder.encode(keyword,"UTF-8");
 
-        System.out.println("keyword 검색 : "+keyword);
+        System.out.println("keyword 검색 : "+encodeKeyword);
 
-        String url = "https://openapi.naver.com/v1/search/local.json?query="+ keyword+"&display=100";
+        String url = "https://openapi.naver.com/v1/search/local.json?query="+ encodeKeyword+"&display=100";
 
         String jsonString = new String();
 
@@ -39,9 +42,9 @@ public class NSearchRepositoryImpl implements SearchRepository{
         conn.setRequestProperty("X-Requested-With", "curl");
         conn.setRequestProperty("X-Naver-Client-Id", "9YE5wtSwDCNQPfhAVgyd");
         conn.setRequestProperty("X-Naver-Client-Secret", "eqd0vk89jn");
-
         conn.setDoOutput(true);
         int responseCode = conn.getResponseCode();
+
         System.out.println("responseCode : "+responseCode);
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
@@ -63,25 +66,36 @@ public class NSearchRepositoryImpl implements SearchRepository{
         }
         JSONObject jsonObj = (JSONObject) obj;
 
-        String code = (String) jsonObj.get("code");
-        String name = (String) jsonObj.get("name");
-        String lastBuildDate = (String) jsonObj.get("lastBuildDate");
-        System.out.println("lastBuildDate : "+lastBuildDate);
-
         JSONArray jArray = (JSONArray) jsonObj.get("items");
 
         System.out.println("jArray.size() : "+jArray.size());
-
+        arrayList = new ArrayList<SearchVo>();
         for(int i=0; i<jArray.size(); i++){
+            SearchVo insertVo = new SearchVo();
+
             JSONObject test = (JSONObject)jArray.get(i);
             String title = (String) test.get("title");
-            System.out.println("title : "+title);
+            String category = (String) test.get("category");
+            //String description = (String) test.get("description");
+            String address = (String) test.get("address");
+            String roadAddress = (String) test.get("roadAddress");
+            System.out.println("title : "+title+" category : "+category+" address : "+address+" roadAddress : "+roadAddress);
+
+            insertVo.setSeq(2);
+            insertVo.setFromData("N");
+            insertVo.setSearchKeyword(keyword);
+            insertVo.setTitle(title);
+            insertVo.setCategory(category);
+            insertVo.setAddress(address);
+            insertVo.setRoadAddress(roadAddress);
+
+            arrayList.add(insertVo);
 
         }
 
 
 
-        return "";
+        return arrayList;
     }
 
     @Override
